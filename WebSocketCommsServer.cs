@@ -26,7 +26,47 @@ namespace WebSocketComms
 		CancellationTokenSource _token;
 		List<WebSocketListener> webSocketListeners;
 
-		static WebSocketServer wssv = null;
+		WebSocketServer _wssv = null;
+
+        public CommsServer(string linkName, int port = 80, bool consoleEcho = false, bool loopbackOnly = false)
+        {
+            webSocketListeners = new List<WebSocketListener>();
+            _linkName = linkName;
+            _token = new CancellationTokenSource();
+            if (loopbackOnly)
+            {
+                _wssv = new WebSocketServer(IPAddress.Loopback, port);
+            }
+            else
+            {
+                _wssv = new WebSocketServer(port);
+            }
+            _wssv.Start();
+        }
+
+        public void AddRoute(string prefix, object commandStructure, Func<TCPCommand, TCPCommand, bool> checkMessage = null)
+        {
+            if (!prefix.StartsWith("/"))
+            {
+                prefix = "/" + prefix;
+            }
+
+            _commandStructure = commandStructure;
+            _prefix = prefix;
+
+            _wssv.AddWebSocketService<WebSocketListener>(prefix, () =>
+            {
+                //if (consoleEcho)
+                //{
+                //    Console.ForegroundColor = ConsoleColor.Yellow;
+                //    Console.WriteLine("WebSocketService created at " + prefix + ".");
+                //    Console.ResetColor();
+                //}
+                WebSocketListener gl = new WebSocketListener(commandStructure, this, false, checkMessage);
+                webSocketListeners.Add(gl);
+                return gl;
+            });
+        }
 
         /// <summary>
         /// Start running the WebSocket CommsServer
@@ -38,64 +78,51 @@ namespace WebSocketComms
         /// <param name="checkMessage">(Experimental) A function to call prior to processing the next message - supplies both the current TCPCommand that is about to be run, and the next TCPCommand that will run after it. Returning 'false' within this function will prevent the current TCPCommand from running - the idea being, if the CommsServer is being bombarded with identical messages, you can elect to drop them rather than deal with the processing.</param>
         /// <param name="consoleEcho">Echoes comms output to the console.</param>
         /// <param name="loopbackOnly">If set to 'true', the CommsServer will only bind to the loopback address.</param>
-		public CommsServer(string linkName, string prefix, object commandStructure, int port = 80, Func<TCPCommand, TCPCommand, bool> checkMessage = null, bool consoleEcho = false, bool loopbackOnly = false)
-		{
-			if (!prefix.StartsWith("/"))
-			{
-				prefix = "/" + prefix;
-			}
+        //public CommsServer(string linkName, string prefix, object commandStructure, int port = 80, Func<TCPCommand, TCPCommand, bool> checkMessage = null, bool consoleEcho = false, bool loopbackOnly = false)
+        //{
+        //	if (!prefix.StartsWith("/"))
+        //	{
+        //		prefix = "/" + prefix;
+        //	}
 
-			webSocketListeners = new List<WebSocketListener>();
-			_linkName = linkName;
-			_token = new CancellationTokenSource();
-			_commandStructure = commandStructure;
-            _prefix = prefix;
+        //	webSocketListeners = new List<WebSocketListener>();
+        //	_linkName = linkName;
+        //	_token = new CancellationTokenSource();
+        //	_commandStructure = commandStructure;
+        //          _prefix = prefix;
 
-			bool needsStarting = false;
-			if (wssv == null)
-			{
-				if (loopbackOnly)
-				{
-					wssv = new WebSocketServer(IPAddress.Loopback, port);
-				}
-				else
-				{
-					wssv = new WebSocketServer(port);
-				}
-				needsStarting = true;
-			}
+        //	bool needsStarting = false;
+        //	if (wssv == null)
+        //	{
+        //		if (loopbackOnly)
+        //		{
+        //			wssv = new WebSocketServer(IPAddress.Loopback, port);
+        //		}
+        //		else
+        //		{
+        //			wssv = new WebSocketServer(port);
+        //		}
+        //		needsStarting = true;
+        //	}
 
-			wssv.AddWebSocketService<WebSocketListener>(prefix, () =>
-			{
-                if (consoleEcho)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("WebSocketService created at " + prefix + ".");
-                    Console.ResetColor();
-                }
-				WebSocketListener gl = new WebSocketListener(commandStructure, this, consoleEcho, checkMessage);
-				webSocketListeners.Add(gl);
-				return gl;
-			});
+        //	wssv.AddWebSocketService<WebSocketListener>(prefix, () =>
+        //	{
+        //              if (consoleEcho)
+        //              {
+        //                  Console.ForegroundColor = ConsoleColor.Yellow;
+        //                  Console.WriteLine("WebSocketService created at " + prefix + ".");
+        //                  Console.ResetColor();
+        //              }
+        //		WebSocketListener gl = new WebSocketListener(commandStructure, this, consoleEcho, checkMessage);
+        //		webSocketListeners.Add(gl);
+        //		return gl;
+        //	});
 
-			if (needsStarting)
-			{
-				wssv.Start();
-			}
-		}
-
-        public void Close()
-        {
-            wssv.RemoveWebSocketService(_prefix);
-
-            // TODO: Find out if/how we should shut down the listeners
-            //foreach (WebSocketListener l in webSocketListeners)
-            //{
-            //    if (l.State == WebSocketState.Open)
-            //    {
-            //    }
-            //}
-        }
+        //	if (needsStarting)
+        //	{
+        //		wssv.Start();
+        //	}
+        //}
 
 		public void SendMessage(TCPCommand message)
 		{
