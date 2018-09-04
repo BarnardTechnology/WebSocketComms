@@ -6,12 +6,13 @@
     <Authors>Chris Barnard</Authors>
     <Company>Barnard Technology Ltd</Company>
     <Description>Simple websocket server to allow easy communication between a web browser and server.</Description>
-    <PackageProjectUrl>https://github.com/digi-chris/BarnardTechnology.NET</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/digi-chris/BarnardTechnology.NET/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/BarnardTechnology/WebSocketComms</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/BarnardTechnology/WebSocketComms/blob/master/LICENSE</PackageLicenseUrl>
     <Copyright>(C) 2018 Barnard Technology Ltd</Copyright>
-    <Version>1.0.2</Version>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
-    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <FileVersion>1.0.3.0</FileVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

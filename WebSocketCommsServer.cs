@@ -49,6 +49,7 @@ namespace WebSocketComms
 			_linkName = linkName;
 			_token = new CancellationTokenSource();
 			_commandStructure = commandStructure;
+            _prefix = prefix;
 
 			bool needsStarting = false;
 			if (wssv == null)
@@ -82,6 +83,19 @@ namespace WebSocketComms
 				wssv.Start();
 			}
 		}
+
+        public void Close()
+        {
+            wssv.RemoveWebSocketService(_prefix);
+
+            // TODO: Find out if/how we should shut down the listeners
+            //foreach (WebSocketListener l in webSocketListeners)
+            //{
+            //    if (l.State == WebSocketState.Open)
+            //    {
+            //    }
+            //}
+        }
 
 		public void SendMessage(TCPCommand message)
 		{
