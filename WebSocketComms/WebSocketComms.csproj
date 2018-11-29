@@ -13,9 +13,22 @@
     <AssemblyVersion>1.0.5.0</AssemblyVersion>
     <FileVersion>1.0.5.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AssemblyName>BarnardTech.WebSocketComms</AssemblyName>
+    <RootNamespace>BarnardTech.WebSocketComms</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="wwwroot\WebSocketComms.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\WebSocketComms.js">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediaTypeMap.Core" Version="2.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="WebSocketSharp-netstandard" Version="1.0.1" />
   </ItemGroup>
