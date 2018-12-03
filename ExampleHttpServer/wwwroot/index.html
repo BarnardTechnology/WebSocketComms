@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>WebSockentComms Example Server</title>
+    <script src="/js/WebSocketComms.js" type="text/javascript"></script>
+</head>
+<body>
+    <script>
+        var cLink = function () {
+
+        };
+
+        var ws = new WebSocketComms(
+            window.location.host,
+            "comms",
+            new cLink(),
+            () => {
+                console.log("WebSocket connected!");
+            },
+            () => {
+                console.log("WebSocket connection error.");
+            }
+        )
+    </script>
+</body>
+</html>

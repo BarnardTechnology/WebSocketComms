@@ -9,12 +9,15 @@ namespace ExampleHttpServer
         {
             Console.WriteLine("Example Webserver with WebSockets communication.");
 
-            HttpCommsServer webServer = new HttpCommsServer("example", 8080, true, true);
-            webServer.AddRoute("comms", new commandLink());
+            using (HttpCommsServer webServer = new HttpCommsServer("example", 8080, true, true))
+            {
+                webServer.AddRoute("comms", new commandLink());
+                webServer.AddEmbeddedContent(typeof(wwwroot.Content));
 
-            Console.WriteLine("Webserver running on http://localhost:8080/");
-            Console.WriteLine("Press enter to exit.");
-            Console.ReadLine();
+                Console.WriteLine("Webserver running on http://localhost:8080/");
+                Console.WriteLine("Press enter to exit.");
+                Console.ReadLine();
+            }
         }
     }
     class commandLink

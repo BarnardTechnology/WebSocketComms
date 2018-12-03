@@ -50,11 +50,29 @@ namespace BarnardTech.WebSocketComms
 
         public string GetMimeType(string path)
         {
+            path = checkPath(path);
             return MimeTypeMap.GetMimeType(Path.GetExtension(path));
+        }
+
+        /// <summary>
+        /// Check incoming path to make sure it's going to match up correctly with a file.
+        /// Currently, we're using this to make sure a default document is loaded when the
+        /// path is '/', but it'll probably be useful for other reasons later on.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        string checkPath(string path)
+        {
+            if (path == "/")
+            {
+                path = path + "index.html";
+            }
+            return path;
         }
 
         public bool ContentExists(string path)
         {
+            path = checkPath(path);
             path = _rootPath + path.Replace("/", ".");
             if (_files.ContainsKey(path))
             {
@@ -69,6 +87,7 @@ namespace BarnardTech.WebSocketComms
 
         public byte[] GetContent(string path)
         {
+            path = checkPath(path);
             path = _rootPath + path.Replace("/", ".");
             if (_files.ContainsKey(path))
             {
@@ -90,7 +109,7 @@ namespace BarnardTech.WebSocketComms
 
         public string GetPage(string path)
         {
-            //path = "HectorWeb" + path.Replace("/", ".");
+            path = checkPath(path);
             Assembly a = Assembly.GetExecutingAssembly();
 
             if (_pages.ContainsKey(path))

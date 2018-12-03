@@ -152,6 +152,7 @@ namespace BarnardTech.WebSocketComms
             {
                 if (disposing)
                 {
+                    Context.WebSocket.Close();
                     running = false;
                     sendSignal.Set();
                 }

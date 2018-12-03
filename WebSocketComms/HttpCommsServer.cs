@@ -16,7 +16,7 @@ using WebSocketSharp.Server;
 
 namespace BarnardTech.WebSocketComms
 {
-    public class HttpCommsServer : ICommsServer
+    public class HttpCommsServer : IDisposable, ICommsServer
     {
         object _commandStructure;
         string _linkName;
@@ -25,7 +25,7 @@ namespace BarnardTech.WebSocketComms
         public bool enabled = true;
         CancellationTokenSource _token;
         List<WebSocketListener> webSocketListeners;
-        WebContentGenerator webContent;
+        List<WebContentGenerator> webContent;
 
         HttpServer _hssv = null;
 
@@ -40,7 +40,9 @@ namespace BarnardTech.WebSocketComms
         /// <param name="loopbackOnly">If set to 'true', the CommsServer will only bind to the loopback address.</param>
         public HttpCommsServer(string linkName, int port = 80, bool consoleEcho = false, bool loopbackOnly = false)
         {
-            webContent = new WebContentGenerator(typeof(wwwroot.Content));
+            webContent = new List<WebContentGenerator>();
+            webContent.Add(new WebContentGenerator(typeof(wwwroot.Content)));
+
             webSocketListeners = new List<WebSocketListener>();
             _linkName = linkName;
             _token = new CancellationTokenSource();
@@ -82,14 +84,30 @@ namespace BarnardTech.WebSocketComms
             });
         }
 
+        public void AddEmbeddedContent(Type contentLocation)
+        {
+            webContent.Add(new WebContentGenerator(contentLocation));
+        }
+
         private void Hssv_OnGet(object sender, HttpRequestEventArgs e)
         {
-            byte[] content = webContent.GetContent(e.Request.Url.AbsolutePath);
-            e.Response.ContentType = webContent.GetMimeType(e.Request.Url.ToString());
-            e.Response.ContentLength64 = content.Length;
-            e.Response.StatusCode = 200;
-            e.Response.StatusDescription = "OK";
-            e.Response.WriteContent(content);
+            foreach (WebContentGenerator wContent in webContent)
+            {
+                if (wContent.ContentExists(e.Request.Url.AbsolutePath))
+                {
+                    byte[] content = wContent.GetContent(e.Request.Url.AbsolutePath);
+                    e.Response.ContentType = wContent.GetMimeType(e.Request.Url.AbsolutePath);
+                    e.Response.ContentLength64 = content.Length;
+                    e.Response.StatusCode = 200;
+                    e.Response.StatusDescription = "OK";
+                    e.Response.WriteContent(content);
+                    return;
+                }
+            }
+
+            // we didn't find anything
+            e.Response.StatusCode = 404;
+            e.Response.StatusDescription = "File not found.";
         }
 
         public void SendMessage(TCPCommand message)
@@ -197,5 +215,47 @@ namespace BarnardTech.WebSocketComms
                 }
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (_hssv != null)
+                    {
+                        foreach (var l in webSocketListeners)
+                        {
+                            l.Dispose();
+                        }
+                        _hssv.Stop();
+                    }
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~CommsServer() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }
